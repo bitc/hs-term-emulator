@@ -1,0 +1,31 @@
+version = 0
+
+[packages]
+[packages.base]
+
+ghc = "8.10.3"
+haskell_cabal_install = "3.4.0.0"
+ncurses = { linux = "6.2" }
+zlib = { version = "1.2.11", windows = false }
+libsdl2 = "2.0.7"
+
+[shell]
+[shell.env]
+
+C_INCLUDE_PATH = [
+    "${libsdl2}/include/SDL2",
+    "${zlib}/include"
+]
+
+LIBRARY_PATH = [
+    "${libsdl2}/lib",
+    "${ncurses}/lib",
+    "${zlib}/lib"
+]
+
+# TODO This is broken. Seems like it must be an absolute path. For now run
+# manually:
+#
+#     export PKG_CONFIG_PATH=`pwd`/pkgconfig"
+#
+PKG_CONFIG_PATH = "./pkgconfig"

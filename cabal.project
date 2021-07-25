@@ -1,0 +1,4 @@
+packages: hs-sdl-term-emulator/
+          hs-term-emulator/
+
+optimization: 2

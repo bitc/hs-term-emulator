@@ -1,0 +1,56 @@
+cabal-version:      2.4
+name:               hs-sdl-term-emulator
+version:            0.1.0.0
+synopsis:           Terminal Emulator written in Haskell, SDL2 Backend
+description:        See: https://github.com/bitc/hs-term-emulator/README.md
+homepage:           https://github.com/bitc/hs-term-emulator
+source-repository:
+  head
+  type:     git
+  location: https://github.com/bitc/hs-term-emulator.git
+
+bug-reports:        https://github.com/bitc/hs-term-emulator/issues
+license:            MIT
+license-file:       LICENSE
+author:             Bit Connor
+maintainer:         https://github.com/bitc
+category:           Terminal
+extra-source-files: CHANGELOG.md
+
+library
+  -- cabal-fmt: expand src
+  exposed-modules:
+    System.Terminal.Emulator.SDL.ImageFont
+    System.Terminal.Emulator.SDL.KeyboardTranslate
+    System.Terminal.Emulator.SDL.LibMain
+    System.Terminal.Emulator.SDL.Pty
+
+  build-depends:
+    , ansi-terminal     ^>=0.11
+    , async             ^>=2.2.3
+    , base              ^>=4.14.1.0
+    , bytestring
+    , conduit           ^>=1.3.4.1
+    , conduit-extra     ^>=1.3.5
+    , hs-term-emulator  ^>=0.1.0.0
+    , lens              ^>=5.0.1
+    , linear            ^>=1.21.6
+    , posix-pty         ^>=0.2.2
+    , process
+    , sdl2              ^>=2.5.3.0
+    , stm
+    , stm-conduit       ^>=4.0.1
+    , vector            ^>=0.12.3.0
+
+  hs-source-dirs:   src
+  default-language: Haskell2010
+  ghc-options:      -Wall -Werror=incomplete-patterns -Werror=missing-fields
+
+executable hs-sdl-term-emulator
+  main-is:          Main.hs
+  build-depends:
+    , base                  ^>=4.14
+    , hs-sdl-term-emulator
+
+  default-language: Haskell2010
+  ghc-options:      -Wall -threaded

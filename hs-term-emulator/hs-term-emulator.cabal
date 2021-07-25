@@ -1,0 +1,84 @@
+cabal-version:      2.4
+name:               hs-term-emulator
+version:            0.1.0.0
+synopsis:           Terminal Emulator written in 100% Haskell
+description:        See: https://github.com/bitc/hs-term-emulator/README.md
+homepage:           https://github.com/bitc/hs-term-emulator
+source-repository:
+  head
+  type:     git
+  location: https://github.com/bitc/hs-term-emulator.git
+
+bug-reports:        https://github.com/bitc/hs-term-emulator/issues
+license:            MIT
+license-file:       LICENSE
+author:             Bit Connor
+maintainer:         https://github.com/bitc
+category:           Terminal
+extra-source-files: CHANGELOG.md
+
+library
+  -- cabal-fmt: expand src
+  exposed-modules:
+    System.Terminal.Emulator.Attrs
+    System.Terminal.Emulator.DECPrivateMode
+    System.Terminal.Emulator.KeyboardInput
+    System.Terminal.Emulator.KeyboardInput.KeyPressToPty
+    System.Terminal.Emulator.Parsing
+    System.Terminal.Emulator.Parsing.Internal
+    System.Terminal.Emulator.Parsing.Types
+    System.Terminal.Emulator.Term
+    System.Terminal.Emulator.Term.Process
+    System.Terminal.Emulator.Term.Resize
+    System.Terminal.Emulator.TermLines
+
+  build-depends:
+    , ansi-terminal  ^>=0.11
+    , attoparsec     ^>=0.14.1
+    , base           ^>=4.14.1.0
+    , bytestring
+    , containers     ^>=0.6.5.1
+    , lens           ^>=5.0.1
+    , text
+    , vector         ^>=0.12.3.0
+
+  hs-source-dirs:   src
+  default-language: Haskell2010
+  ghc-options:      -Wall -Werror=incomplete-patterns -Werror=missing-fields
+
+test-suite spec
+  type:               exitcode-stdio-1.0
+  main-is:            Spec.hs
+
+  -- cabal-fmt: expand test -Spec
+  other-modules:      System.Terminal.Emulator.Parsing.InternalSpec
+  hs-source-dirs:     test
+  build-depends:
+    , ansi-terminal     ^>=0.11
+    , attoparsec        ^>=0.14.1
+    , base              ^>=4.14
+    , hs-term-emulator
+    , hspec             ^>=2.8.2
+    , text
+    , vector            ^>=0.12.3.0
+
+  default-language:   Haskell2010
+  build-tool-depends: hspec-discover:hspec-discover ==2.*
+  other-extensions:   TemplateHaskell
+  ghc-options:
+    -Wall -threaded -Werror=incomplete-patterns -Werror=missing-fields
+
+benchmark bench
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+
+  -- cabal-fmt: expand bench -Main
+  other-modules:
+  hs-source-dirs: bench
+  build-depends:
+    , base              ^>=4.14
+    , criterion         ^>=1.5.9.0
+    , hs-term-emulator
+
+  ghc-options:
+    -Wall -threaded -Werror=incomplete-patterns -Werror=missing-fields
