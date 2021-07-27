@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               hs-sdl-term-emulator
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Terminal Emulator written in Haskell, SDL2 Backend
 description:        See: https://github.com/bitc/hs-term-emulator#readme
 homepage:           https://github.com/bitc/hs-term-emulator
