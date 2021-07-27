@@ -34,7 +34,7 @@ library
   build-depends:
     , ansi-terminal  ^>=0.11
     , attoparsec     ^>=0.14.1
-    , base           ^>=4.14.1.0
+    , base           >=4.10
     , bytestring
     , containers     ^>=0.6.5.1
     , lens           ^>=5.0.1
@@ -55,7 +55,7 @@ test-suite spec
   build-depends:
     , ansi-terminal     ^>=0.11
     , attoparsec        ^>=0.14.1
-    , base              ^>=4.14
+    , base              >=4.10
     , hs-term-emulator
     , hspec             ^>=2.8.2
     , text
@@ -75,7 +75,7 @@ benchmark bench
   other-modules:
   hs-source-dirs:   bench
   build-depends:
-    , base              ^>=4.14
+    , base              >=4.10
     , criterion         ^>=1.5.9.0
     , hs-term-emulator
 
