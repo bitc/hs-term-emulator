@@ -7,11 +7,13 @@ import qualified System.Console.ANSI.Types as SGR
 
 -- | Attrs:
 --
+-- @
 --     00000000 00000000 000000000000uuii
 --     ^^ fg ^^ ^^ bg ^^ ^^^^^^^^^^^^^^^^
 --
 --     ii : ConsoleIntensity (00 = Normal, 01 = Bold, 10 = Faint)
 --     uu : Underlining (00 = NoUnderline, 01 = SingleUnderline, 10 = DoubleUnderline)
+-- @
 type Attrs = Word32
 
 blankAttrs :: Attrs
