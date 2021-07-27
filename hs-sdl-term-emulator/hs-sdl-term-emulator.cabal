@@ -4,11 +4,6 @@ version:            0.1.0.0
 synopsis:           Terminal Emulator written in Haskell, SDL2 Backend
 description:        See: https://github.com/bitc/hs-term-emulator/README.md
 homepage:           https://github.com/bitc/hs-term-emulator
-source-repository:
-  head
-  type:     git
-  location: https://github.com/bitc/hs-term-emulator.git
-
 bug-reports:        https://github.com/bitc/hs-term-emulator/issues
 license:            MIT
 license-file:       LICENSE
@@ -16,6 +11,10 @@ author:             Bit Connor
 maintainer:         https://github.com/bitc
 category:           Terminal
 extra-source-files: CHANGELOG.md
+
+source-repository head
+  type:     git
+  location: https://github.com/bitc/hs-term-emulator.git
 
 library
   -- cabal-fmt: expand src
