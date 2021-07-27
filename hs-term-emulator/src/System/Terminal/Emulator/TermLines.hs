@@ -45,7 +45,7 @@ length (StrictSeq v) = Seq.length v
 
 -- | @replicate n x@ is a sequence consisting of n copies of x.
 replicate :: Int -> a -> StrictSeq a
-replicate n x = StrictSeq $ Seq.replicate n x
+replicate n x = x `seq` (StrictSeq (Seq.replicate n x))
 {-# INLINE replicate #-}
 
 -- | A lens to the specified index of the sequence. Must be in range.
