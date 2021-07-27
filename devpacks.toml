@@ -26,6 +26,6 @@ LIBRARY_PATH = [
 # TODO This is broken. Seems like it must be an absolute path. For now run
 # manually:
 #
-#     export PKG_CONFIG_PATH=`pwd`/pkgconfig"
+#     export PKG_CONFIG_PATH=`pwd`/pkgconfig
 #
 PKG_CONFIG_PATH = "./pkgconfig"
