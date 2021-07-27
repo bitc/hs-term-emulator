@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               hs-term-emulator
-version:            0.1.0.2
+version:            0.1.0.3
 synopsis:           Terminal Emulator written in 100% Haskell
 description:        See: https://github.com/bitc/hs-term-emulator#readme
 homepage:           https://github.com/bitc/hs-term-emulator
