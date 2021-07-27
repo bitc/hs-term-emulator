@@ -52,8 +52,9 @@ main = do
     ( SDL.createWindow
         "My SDL Application"
         SDL.defaultWindow
-          { SDL.windowBorder = False,
-            SDL.windowInitialSize = initialWindowSize
+          { SDL.windowBorder = True,
+            SDL.windowInitialSize = initialWindowSize,
+            SDL.windowResizable = True
           }
     )
     SDL.destroyWindow
