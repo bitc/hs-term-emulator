@@ -12,7 +12,7 @@ data TermAtom
   | TermAtom_SingleCharacterFunctionUnknown !Char
   | TermAtom_EscapeSequence !EscapeSequence
   | TermAtom_EscapeSequenceUnknown !Text
-  deriving (Eq, Show)
+  deriving (Show, Eq)
 
 data SingleCharacterFunction
   = -- | @BEL@ Bell (BEL  is Ctrl-G).
@@ -35,7 +35,7 @@ data SingleCharacterFunction
     Control_Tab
   | -- | @VT@ Vertical Tab (VT  is Ctrl-K).  This is treated the same as LF.
     Control_VerticalTab
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data EscapeSequence
   = -- | @ESC M@ Reverse Index (RI  is 0x8d).
@@ -50,7 +50,7 @@ data EscapeSequence
     ESC_SetG0CharacterSet !Text
   | Esc_CSI !ControlSequenceIntroducer
   | Esc_OSC !OperatingSystemCommand
-  deriving (Eq, Show)
+  deriving (Show, Eq)
 
 data ControlSequenceIntroducer
   = -- | @CSI Ps `@  Character Position Absolute  [column] (default = [row,1]) (HPA).
@@ -120,7 +120,7 @@ data ControlSequenceIntroducer
   | -- | Unknown DECRST (DEC Private Mode Reset) code
     CSI_DECRST_Unknown !Int
   | CSI_SGR !(Vector SGR)
-  deriving (Eq, Show)
+  deriving (Show, Eq)
 
 data EraseInLineParam
   = -- | @Ps = 0@ Erase to Right (default).
@@ -129,7 +129,7 @@ data EraseInLineParam
     ClearFromCursorToBeginningOfLine
   | -- | @Ps = 2@  Erase All.
     ClearEntireLine
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data EraseInDisplayParam
   = -- | @Ps = 0@ Erase Below (default).
@@ -140,21 +140,21 @@ data EraseInDisplayParam
     EraseAll
   | -- | @Ps = 3@ Erase Saved Lines, xterm.
     EraseSavedLines
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data WindowManipulation
   = -- | @22;0@ Save xterm icon and window title on stack.
     SaveIconAndWindowTitleOnStack
   | -- | @23;0@ Restore xterm icon and window title from stack.
     RestoreIconAndWindowTitleOnStack
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data DeviceStatusReport
   = -- | Status Report. Result ("OK") is @CSI 0 n@
     StatusReport
   | -- | Report Cursor Position (CPR) [row;column]. Result is @CSI r ; c R@
     ReportCursorPosition
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data Mode
   = -- | Keyboard Action Mode (KAM)
@@ -165,11 +165,11 @@ data Mode
     SendReceive
   | -- | Automatic Newline / Normal Linefeed (LNM).
     AutomaticNewlineNormalLinefeed
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data SendDeviceAttributesSecondary
   = RequestTerminalIdentificationCode
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 data OperatingSystemCommand
   = -- | Change Icon Name and Window Title
@@ -190,7 +190,7 @@ data OperatingSystemCommand
     OSC_RequestTextBackgroundColor
   | -- | @Ps = 112@ Reset text cursor color.
     OSC_ResetTextCursorColor
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord)
 
 codeToSGR :: Int -> Maybe SGR.SGR
 codeToSGR 0 = Just SGR.Reset

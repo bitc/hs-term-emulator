@@ -137,7 +137,7 @@ data DECPrivateMode
     --
     -- @DECRST@: Reset bracketed paste mode.
     BracketedPasteMode
-  deriving (Eq, Show)
+  deriving (Show, Eq, Ord, Enum, Bounded)
 
 intToDECPrivateMode :: Int -> Maybe DECPrivateMode
 intToDECPrivateMode 1 = Just DECCKM
