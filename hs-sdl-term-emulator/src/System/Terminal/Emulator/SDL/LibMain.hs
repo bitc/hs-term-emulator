@@ -179,7 +179,7 @@ terminalLoop window renderer fontTexture = do
           term <- readTVar termVar
           case mbOutputBuf of
             Just outputBuf -> do
-              let (termWrite, term') = processTermAtoms outputBuf term
+              let (termWrite, _, term') = processTermAtoms outputBuf term
               writeTVar termVar $! term'
               pure (termWrite, term')
             Nothing -> pure (B.empty, term)

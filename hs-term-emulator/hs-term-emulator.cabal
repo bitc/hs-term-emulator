@@ -29,7 +29,12 @@ library
     System.Terminal.Emulator.Term
     System.Terminal.Emulator.Term.Process
     System.Terminal.Emulator.Term.Resize
+    System.Terminal.Emulator.Term.TermChange
     System.Terminal.Emulator.TermLines
+    System.Terminal.Emulator.TermSurface
+    System.Terminal.Emulator.TermSurface.ApplyTermSurfaceChange
+    System.Terminal.Emulator.TermSurface.FromTerm
+    System.Terminal.Emulator.TermSurface.TermSurfaceChange
 
   build-depends:
     , ansi-terminal  ^>=0.11
@@ -50,7 +55,13 @@ test-suite spec
   main-is:            Spec.hs
 
   -- cabal-fmt: expand test -Spec
-  other-modules:      System.Terminal.Emulator.Parsing.InternalSpec
+  other-modules:
+    System.Terminal.Emulator.Parsing.InternalSpec
+    System.Terminal.Emulator.Term.ArbitraryTermAtom
+    System.Terminal.Emulator.Term.ProcessSpec
+    System.Terminal.Emulator.Term.SimpleTerm
+    System.Terminal.Emulator.Term.TermSurfaceChangesSpec
+
   hs-source-dirs:     test
   build-depends:
     , ansi-terminal     ^>=0.11
@@ -58,6 +69,8 @@ test-suite spec
     , base              >=4.10     && <5
     , hs-term-emulator
     , hspec             ^>=2.8.2
+    , lens              ^>=5.0.1
+    , QuickCheck        ^>=2.14.2
     , text
     , vector            ^>=0.12.3.0
 
