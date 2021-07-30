@@ -51,7 +51,11 @@ test-suite spec
   main-is:            Spec.hs
 
   -- cabal-fmt: expand test -Spec
-  other-modules:      System.Terminal.Emulator.Parsing.InternalSpec
+  other-modules:
+    System.Terminal.Emulator.Parsing.InternalSpec
+    System.Terminal.Emulator.Term.ProcessSpec
+    System.Terminal.Emulator.Term.SimpleTerm
+
   hs-source-dirs:     test
   build-depends:
     , ansi-terminal     ^>=0.11
@@ -59,6 +63,7 @@ test-suite spec
     , base              >=4.10     && <5
     , hs-term-emulator
     , hspec             ^>=2.8.2
+    , lens              ^>=5.0.1
     , text
     , vector            ^>=0.12.3.0
 
