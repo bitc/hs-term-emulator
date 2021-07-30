@@ -6,6 +6,7 @@ module System.Terminal.Emulator.TermLines
     TermLines,
     empty,
     length,
+    singleton,
     replicate,
     vIndex,
     head,
@@ -15,6 +16,7 @@ module System.Terminal.Emulator.TermLines
     drop,
     dropLast,
     traverseWithIndex,
+    toSeq,
   )
 where
 
@@ -31,7 +33,7 @@ type TermLine = VU.Vector Cell
 type TermLines = StrictSeq TermLine
 
 newtype StrictSeq a = StrictSeq (Seq a)
-  deriving (Show, Eq, Ord, Functor, Semigroup)
+  deriving (Show, Eq, Ord, Functor, Semigroup, Monoid, Foldable)
 
 -- | The empty sequence.
 empty :: StrictSeq a
@@ -42,6 +44,10 @@ empty = StrictSeq Seq.empty
 length :: StrictSeq a -> Int
 length (StrictSeq v) = Seq.length v
 {-# INLINE length #-}
+
+singleton :: a -> StrictSeq a
+singleton x = x `seq` (StrictSeq (Seq.singleton x))
+{-# INLINE singleton #-}
 
 -- | @replicate n x@ is a sequence consisting of n copies of x.
 replicate :: Int -> a -> StrictSeq a
@@ -104,3 +110,7 @@ dropLast i (StrictSeq v) = StrictSeq (Seq.take (Seq.length v - i) v)
 traverseWithIndex :: Applicative f => (Int -> a -> f b) -> StrictSeq a -> f (StrictSeq b)
 traverseWithIndex f (StrictSeq v) = StrictSeq <$> (Seq.traverseWithIndex f v)
 {-# INLINE traverseWithIndex #-}
+
+toSeq :: StrictSeq a -> Seq a
+toSeq (StrictSeq v) = v
+{-# INLINE toSeq #-}
