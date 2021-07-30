@@ -29,6 +29,7 @@ library
     System.Terminal.Emulator.Term
     System.Terminal.Emulator.Term.Process
     System.Terminal.Emulator.Term.Resize
+    System.Terminal.Emulator.Term2
     System.Terminal.Emulator.TermLines
 
   build-depends:
