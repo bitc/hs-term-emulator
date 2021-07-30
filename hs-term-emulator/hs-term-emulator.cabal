@@ -70,7 +70,7 @@ test-suite spec
     , hs-term-emulator
     , hspec             ^>=2.8.2
     , lens              >=4.19     && <6
-    , QuickCheck        ^>=2.14.2
+    , QuickCheck        ^>=2.14.0
     , text
     , vector            ^>=0.12.2.0
 
