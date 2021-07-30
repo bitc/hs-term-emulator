@@ -19,7 +19,7 @@ runTerminal term input =
   case parseOnly (many parseTermAtom <* endOfInput) input of
     Left err -> error $ "Error parsing terminal input: " <> err
     Right ts ->
-      let (_, term') = processTermAtoms ts term
+      let (_, _, term') = processTermAtoms ts term
        in term'
 
 testCase :: (Term, Text) -> SimpleTerm -> Expectation

@@ -24,10 +24,10 @@ blankTerm = mkTerm (10, 4)
 
 spec :: Spec
 spec = do
-  describe "Test" $ do
+  describe "TestSurfaceChanges" $ do
     modifyMaxSuccess (const 10000) $
       modifyMaxSize (const 4000) $
-        it "Test 1" $
+        it "TermSurface Property Test" $
           property $
             \(atoms :: [TestTermAtom]) ->
               let initialTerm = blankTerm
