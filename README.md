@@ -1,5 +1,7 @@
 # hs-term-emulator
 
+<a href="https://twitter.com/bitconnordev">![https://twitter.com/bitconnordev](https://img.shields.io/twitter/follow/bitconnordev?style=social)</a>
+
 This is a Terminal Emulator (like xterm) implemented entirely in Haskell.
 
 There are two packages:
