@@ -308,13 +308,14 @@ termProcessDecset DECPrivateMode.SaveCursorAsInDECSCAndUseAlternateScreenBuffer 
           ( map
               (\row -> TermSurfaceChange.UpdateLine row (term' ^. activeScreen . TL.vIndex row))
               [0 .. (term ^. numRows) - 1]
-          ),
+          )
+          <> Seq.singleton (TermSurfaceChange.ClearScrollBack),
         term'
       )
 termProcessDecset DECPrivateMode.Att610 = noSurfaceChanges id -- TODO Set flag on 'Term'
 termProcessDecset DECPrivateMode.DECTCEM = noSurfaceChanges id -- TODO Set flag on 'Term'
 termProcessDecset DECPrivateMode.DECAWM = noSurfaceChanges $ modeWrap .~ True
-termProcessDecset other = noSurfaceChanges id -- error $ "TODO: DECSET: " <> show other
+termProcessDecset _other = noSurfaceChanges id -- error $ "TODO: DECSET: " <> show other
 
 termProcessDecrst :: DECPrivateMode -> Term -> (Seq TermSurfaceChange, Term)
 termProcessDecrst DECPrivateMode.DECCKM = noSurfaceChanges $ keyboardState %~ (\state -> state {keyboardState_DECCKM = False})
@@ -330,13 +331,15 @@ termProcessDecrst DECPrivateMode.SaveCursorAsInDECSCAndUseAlternateScreenBuffer 
           ( map
               (\row -> TermSurfaceChange.UpdateLine row (term' ^. activeScreen . TL.vIndex row))
               [0 .. (term ^. numRows) - 1]
-          ),
+          )
+          <> Seq.singleton TermSurfaceChange.ClearScrollBack
+          <> fmap TermSurfaceChange.AppendScrollBack (TL.toSeq (term' ^. scrollBackLines)),
         term'
       )
 termProcessDecrst DECPrivateMode.DECAWM = noSurfaceChanges $ modeWrap .~ False
 termProcessDecrst DECPrivateMode.EnableAllMouseMotions = noSurfaceChanges id
 termProcessDecrst DECPrivateMode.ReportMotionOnButtonPress = noSurfaceChanges id
-termProcessDecrst other = noSurfaceChanges id -- error $ "TODO: DECRST: " <> show other
+termProcessDecrst _other = noSurfaceChanges id -- error $ "TODO: DECRST: " <> show other
 
 termProcessSGR :: SGR.SGR -> Term -> Term
 termProcessSGR = over termAttrs . applySGR
