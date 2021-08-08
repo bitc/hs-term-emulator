@@ -53,6 +53,7 @@ test-suite spec
   -- cabal-fmt: expand test -Spec
   other-modules:
     System.Terminal.Emulator.Parsing.InternalSpec
+    System.Terminal.Emulator.Term.ArbitraryTermAtom
     System.Terminal.Emulator.Term.ProcessSpec
     System.Terminal.Emulator.Term.SimpleTerm
 
@@ -64,6 +65,7 @@ test-suite spec
     , hs-term-emulator
     , hspec             ^>=2.8.2
     , lens              >=4.19     && <6
+    , QuickCheck        ^>=2.14.0
     , text
     , vector            ^>=0.12.2.0
 
