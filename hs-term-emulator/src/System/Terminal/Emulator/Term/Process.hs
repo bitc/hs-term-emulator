@@ -386,6 +386,8 @@ applySGR (SGR.SetPaletteColor _ _) = id -- TODO Not Supported
 applySGR (SGR.SetDefaultColor SGR.Foreground) = set attrsFg Nothing
 applySGR (SGR.SetDefaultColor SGR.Background) = set attrsBg Nothing
 
+infixr 1 >>>>
+
 (>>>>) :: (Term -> (Seq TermSurfaceChange, Term)) -> (Term -> (Seq TermSurfaceChange, Term)) -> (Term -> (Seq TermSurfaceChange, Term))
 f1 >>>> f2 = \term ->
   let (cs1, term') = f1 term
