@@ -33,6 +33,7 @@ library
     System.Terminal.Emulator.TermLines
     System.Terminal.Emulator.TermSurface
     System.Terminal.Emulator.TermSurface.ApplyTermSurfaceChange
+    System.Terminal.Emulator.TermSurface.CollapseTermSurfaceChanges
     System.Terminal.Emulator.TermSurface.FromTerm
     System.Terminal.Emulator.TermSurface.TermSurfaceChange
 
@@ -61,6 +62,7 @@ test-suite spec
     System.Terminal.Emulator.Term.ProcessSpec
     System.Terminal.Emulator.Term.SimpleTerm
     System.Terminal.Emulator.Term.TermSurfaceChangesSpec
+    System.Terminal.Emulator.TermSurface.CollapseTermSurfaceChangesSpec
 
   hs-source-dirs:     test
   build-depends:
