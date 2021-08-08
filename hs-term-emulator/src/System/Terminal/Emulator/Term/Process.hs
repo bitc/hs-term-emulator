@@ -222,7 +222,7 @@ insertBlankChars n term = (cursorLine %~ updateLine) term
       where
         start = VU.take col termLine
         blanks = VU.replicate n' (' ', term ^. termAttrs)
-        rest = VU.slice col (term ^. numCols - col) termLine
+        rest = VU.slice col (term ^. numCols - col - n') termLine
 
 insertBlankLines :: Int -> Term -> Term
 insertBlankLines n term
