@@ -1,15 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module System.Terminal.Emulator.Term.ProcessSpec where
 
 import Control.Applicative (many)
+import Control.Lens
 import Data.Attoparsec.Text
 import Data.Text (Text)
+import qualified Data.Vector.Unboxed as VU
 import System.Terminal.Emulator.Parsing (parseTermAtom)
-import System.Terminal.Emulator.Term (Term, mkTerm)
+import System.Terminal.Emulator.Parsing.Types (TermAtom)
+import System.Terminal.Emulator.Term (Term, activeScreen, mkTerm, numCols, scrollBackLines)
+import System.Terminal.Emulator.Term.ArbitraryTermAtom (arbitraryTermAtom)
 import System.Terminal.Emulator.Term.Process (processTermAtoms)
 import System.Terminal.Emulator.Term.SimpleTerm (SimpleTerm (..), termToSimpleTerm)
 import Test.Hspec
+import Test.Hspec.QuickCheck (modifyMaxSize, modifyMaxSuccess)
+import Test.QuickCheck (Arbitrary (..), property)
+import Test.QuickCheck.Property (failed, reason, succeeded)
+
+newtype TestTermAtom = TestTermAtom {unTestTermAtom :: TermAtom}
+  deriving (Show)
+
+instance Arbitrary TestTermAtom where
+  arbitrary = TestTermAtom <$> arbitraryTermAtom
 
 blankTerm :: Term
 blankTerm = mkTerm (10, 4)
@@ -31,6 +45,18 @@ testCase (initialTerm, input) expected =
 spec :: Spec
 spec = do
   describe "ProcessSpec" $ do
+    modifyMaxSuccess (const 10000) $
+      modifyMaxSize (const 4000) $
+        xit "Term Property Test: All lines proper width" $
+          property $
+            \(atoms :: [TestTermAtom]) ->
+              let initialTerm = blankTerm
+                  (_, term') = processTermAtoms (map unTestTermAtom atoms) initialTerm
+               in if all (\l -> VU.length l == term' ^. numCols) (term' ^. activeScreen)
+                    && all (\l -> VU.length l == term' ^. numCols) (term' ^. scrollBackLines)
+                    then succeeded
+                    else failed {reason = show term' <> "\n"}
+
     it "No Input" $
       testCase
         (blankTerm, "")
