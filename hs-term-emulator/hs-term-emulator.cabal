@@ -67,6 +67,7 @@ test-suite spec
     , ansi-terminal     >=0.10     && <0.12
     , attoparsec        >=0.13.2.1 && <0.15
     , base              >=4.8      && <5
+    , containers        >=0.6.0.1  && <7
     , hs-term-emulator
     , hspec             ^>=2.8.2
     , lens              >=4.19     && <6

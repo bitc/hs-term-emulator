@@ -27,7 +27,7 @@ import System.Terminal.Emulator.DECPrivateMode (DECPrivateMode)
 import qualified System.Terminal.Emulator.DECPrivateMode as DECPrivateMode
 import System.Terminal.Emulator.KeyboardInput (KeyboardState (keyboardState_CRLF, keyboardState_DECCKM, keyboardState_Locked))
 import System.Terminal.Emulator.Parsing.Types (ControlSequenceIntroducer (..), DeviceStatusReport (..), EraseInDisplayParam (..), EraseInLineParam (..), EscapeSequence (..), Mode (..), OperatingSystemCommand (..), SendDeviceAttributesSecondary (RequestTerminalIdentificationCode), SingleCharacterFunction (..), TermAtom (..), WindowManipulation (..))
-import System.Terminal.Emulator.Term (Term, activeScreen, addScrollBackLines, altScreenActive, cursorLine, cursorPos, cursorState, insertMode, keyboardState, mkTerm, modeWrap, numCols, numRows, origin, scrollBackLines, scrollBottom, scrollTop, termAttrs, termScreen, vuIndex, windowTitle, wrapNext)
+import System.Terminal.Emulator.Term (Term, activeScreen, addScrollBackLines, altScreenActive, cursorLine, cursorPos, cursorState, insertMode, keyboardState, mkTerm, modeWrap, numCols, numRows, numScrollBackLines, origin, scrollBackLines, scrollBottom, scrollTop, termAttrs, termScreen, vuIndex, windowTitle, wrapNext)
 import System.Terminal.Emulator.TermLines (TermLine)
 import qualified System.Terminal.Emulator.TermLines as TL
 import System.Terminal.Emulator.TermSurface.TermSurfaceChange (TermSurfaceChange)
@@ -214,6 +214,7 @@ softTerminalReset term =
               [0 .. (term' ^. numRows) - 1]
           )
           <> Seq.singleton (TermSurfaceChange.MoveCursor (term' ^. cursorPos . _1) (term' ^. cursorPos . _2))
+          <> Seq.singleton (TermSurfaceChange.SetScrollBackVisible True)
           <> Seq.singleton TermSurfaceChange.ClearScrollBack
           <> Seq.singleton (TermSurfaceChange.SetWindowTitle (term' ^. windowTitle)),
         term'
@@ -309,7 +310,7 @@ termProcessDecset DECPrivateMode.SaveCursorAsInDECSCAndUseAlternateScreenBuffer 
               (\row -> TermSurfaceChange.UpdateLine row (term' ^. activeScreen . TL.vIndex row))
               [0 .. (term ^. numRows) - 1]
           )
-          <> Seq.singleton (TermSurfaceChange.ClearScrollBack),
+          <> Seq.singleton (TermSurfaceChange.SetScrollBackVisible False),
         term'
       )
 termProcessDecset DECPrivateMode.Att610 = noSurfaceChanges id -- TODO Set flag on 'Term'
@@ -332,8 +333,7 @@ termProcessDecrst DECPrivateMode.SaveCursorAsInDECSCAndUseAlternateScreenBuffer 
               (\row -> TermSurfaceChange.UpdateLine row (term' ^. activeScreen . TL.vIndex row))
               [0 .. (term ^. numRows) - 1]
           )
-          <> Seq.singleton TermSurfaceChange.ClearScrollBack
-          <> fmap TermSurfaceChange.AppendScrollBack (TL.toSeq (term' ^. scrollBackLines)),
+          <> Seq.singleton (TermSurfaceChange.SetScrollBackVisible True),
         term'
       )
 termProcessDecrst DECPrivateMode.DECAWM = noSurfaceChanges $ modeWrap .~ False
@@ -485,8 +485,15 @@ scrollUp orig n term =
     copyLinesToScrollBack :: Term -> (Seq TermSurfaceChange, Term)
     copyLinesToScrollBack
       | not (term ^. altScreenActive) && orig == 0 = \t ->
-        let newScrollBackLines = TL.take n' (t ^. termScreen)
-         in (TL.toSeq (fmap TermSurfaceChange.AppendScrollBack newScrollBackLines), addScrollBackLines newScrollBackLines t)
+        let newScrollBackLines = TL.takeLast (term ^. numScrollBackLines) (TL.take n' (t ^. termScreen))
+            numToDelete = TL.length (t ^. scrollBackLines) + TL.length newScrollBackLines - term ^. numScrollBackLines
+         in ( ( if numToDelete > 0
+                  then pure (TermSurfaceChange.ClearScrollBackStart numToDelete)
+                  else mempty
+              )
+                <> TL.toSeq (fmap TermSurfaceChange.AppendScrollBack newScrollBackLines),
+              addScrollBackLines newScrollBackLines t
+            )
       | otherwise = noSurfaceChanges id
     scrollLines :: Term -> (Seq TermSurfaceChange, Term)
     scrollLines t =

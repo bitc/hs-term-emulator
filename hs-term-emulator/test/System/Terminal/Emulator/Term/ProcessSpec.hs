@@ -47,11 +47,11 @@ spec = do
   describe "ProcessSpec" $ do
     modifyMaxSuccess (const 10000) $
       modifyMaxSize (const 4000) $
-        xit "Term Property Test: All lines proper width" $
+        it "Term Property Test: All lines proper width" $
           property $
             \(atoms :: [TestTermAtom]) ->
               let initialTerm = blankTerm
-                  (_, term') = processTermAtoms (map unTestTermAtom atoms) initialTerm
+                  (_, _, term') = processTermAtoms (map unTestTermAtom atoms) initialTerm
                in if all (\l -> VU.length l == term' ^. numCols) (term' ^. activeScreen)
                     && all (\l -> VU.length l == term' ^. numCols) (term' ^. scrollBackLines)
                     then succeeded

@@ -6,10 +6,14 @@ where
 import Control.Category ((>>>))
 import Control.Exception (assert)
 import Control.Lens
+import Data.Sequence (Seq)
+import qualified Data.Sequence as Seq
 import qualified Data.Vector.Unboxed as VU
-import System.Terminal.Emulator.Term (Term, addScrollBackLines, altScreenActive, cursorPos, numCols, numRows, scrollBackLines, scrollBottom, scrollTop, termAlt, termAttrs, termScreen)
+import System.Terminal.Emulator.Term (Term, activeScreen, addScrollBackLines, altScreenActive, cursorPos, numCols, numRows, numScrollBackLines, scrollBackLines, scrollBottom, scrollTop, termAlt, termAttrs, termScreen)
 import System.Terminal.Emulator.TermLines (TermLine, TermLines)
 import qualified System.Terminal.Emulator.TermLines as TL
+import System.Terminal.Emulator.TermSurface.TermSurfaceChange (TermSurfaceChange)
+import qualified System.Terminal.Emulator.TermSurface.TermSurfaceChange as TermSurfaceChange
 import Prelude hiding (lines)
 
 -- | This should be called when the user resizes the terminal window.
@@ -17,27 +21,29 @@ import Prelude hiding (lines)
 -- You should also call 'System.Posix.Pty.resizePty', but only afterwards
 --
 -- The tuple is in the shape @(newWidth, newHeight)@, both must be positive
-resizeTerm :: Term -> (Int, Int) -> Term
+resizeTerm :: Term -> (Int, Int) -> (Seq TermSurfaceChange, Term)
 resizeTerm term (newWidth, newHeight) =
   assert (newWidth > 0) $
     assert (newHeight > 0) $
       ( resizeTermWidth newWidth
-          >>> resizeTermHeight newHeight
-          >>> scrollTop .~ 0
-          >>> scrollBottom .~ (newHeight - 1)
+          >>>> resizeTermHeight newHeight
+          >>>> silent (scrollTop .~ 0)
+          >>>> silent (scrollBottom .~ (newHeight - 1))
       )
         term
 
 -- Internal function. Resize the terminal, only changing the width.
-resizeTermWidth :: Int -> Term -> Term
+resizeTermWidth :: Int -> Term -> (Seq TermSurfaceChange, Term)
 resizeTermWidth newWidth term =
-  ( numCols .~ newWidth
-      >>> termScreen %~ fmap adjustLine
-      >>> termAlt %~ fmap adjustLine
-      >>> scrollBackLines %~ fmap adjustLine
-      >>> cursorPos . _2 %~ min (newWidth - 1)
-  )
-    term
+  let (surfaceChanges, term') =
+        ( silent (numCols .~ newWidth)
+            >>>> silent (termScreen %~ fmap adjustLine)
+            >>>> silent (termAlt %~ fmap adjustLine)
+            >>>> silent (scrollBackLines %~ fmap adjustLine)
+            >>>> clampCursor
+        )
+          term
+   in (surfaceChanges <> pure (TermSurfaceChange.Resize newWidth (term ^. numRows)), term')
   where
     oldWidth = term ^. numCols
 
@@ -52,8 +58,14 @@ resizeTermWidth newWidth term =
       | newWidth > oldWidth = expandLine
       | otherwise = shrinkLine
 
+    -- silent (cursorPos . _2 %~ min (newWidth - 1))
+    clampCursor :: Term -> (Seq TermSurfaceChange, Term)
+    clampCursor t
+      | t ^. cursorPos . _2 > (newWidth - 1) = (pure (TermSurfaceChange.MoveCursor (t ^. cursorPos . _1) (newWidth - 1)), (cursorPos . _2 .~ newWidth - 1) t)
+      | otherwise = (mempty, t)
+
 -- Internal function. Resize the terminal, only changing the height.
-resizeTermHeight :: Int -> Term -> Term
+resizeTermHeight :: Int -> Term -> (Seq TermSurfaceChange, Term)
 resizeTermHeight newHeight term
   | newHeight >= oldHeight = resizeTermHeight' newHeight term
   | otherwise =
@@ -62,14 +74,23 @@ resizeTermHeight newHeight term
   where
     oldHeight = term ^. numRows
 
-resizeTermHeight' :: Int -> Term -> Term
+resizeTermHeight' :: Int -> Term -> (Seq TermSurfaceChange, Term)
 resizeTermHeight' newHeight term =
-  ( numRows .~ newHeight
-      >>> adjustScreen
-      >>> termAlt %~ adjustAltScreen
-      >>> cursorPos . _1 %~ min (newHeight - 1)
-  )
-    term
+  let (surfaceChanges, term') =
+        ( silent (numRows .~ newHeight)
+            >>>> adjustScreen
+            >>>> silent (termAlt %~ adjustAltScreen)
+            >>>> silent (cursorPos . _1 %~ min (newHeight - 1))
+        )
+          term
+   in ( surfaceChanges
+          <> Seq.fromList
+            ( map
+                (\row -> TermSurfaceChange.UpdateLine row (term' ^. activeScreen . TL.vIndex row))
+                [0 .. (term' ^. numRows) - 1]
+            ),
+        term'
+      )
   where
     oldHeight = term ^. numRows
 
@@ -86,17 +107,27 @@ resizeTermHeight' newHeight term =
       | newHeight > oldHeight = expandAltScreen
       | otherwise = shrinkAltScreen
 
-    expandScreen :: Term -> Term
-    expandScreen =
-      ( termScreen
-          %~ ( \lines ->
-                 TL.takeLast numHistoryLines (term ^. scrollBackLines)
-                   <> lines
-                   <> TL.replicate numNewBlankLines newBlankLine
-             )
-      )
-        >>> scrollBackLines %~ TL.dropLast numHistoryLines
-        >>> moveCursorDown
+    expandScreen :: Term -> (Seq TermSurfaceChange, Term)
+    expandScreen t =
+      let term' =
+            ( ( termScreen
+                  %~ ( \lines ->
+                         TL.takeLast numHistoryLines (t ^. scrollBackLines)
+                           <> lines
+                           <> TL.replicate numNewBlankLines newBlankLine
+                     )
+              )
+                >>> scrollBackLines %~ TL.dropLast numHistoryLines
+                >>> moveCursorDown
+            )
+              t
+       in ( Seq.fromList
+              [ TermSurfaceChange.ClearScrollBackEnd numHistoryLines,
+                TermSurfaceChange.Resize (term ^. numCols) newHeight,
+                TermSurfaceChange.MoveCursor (term' ^. cursorPos . _1) (term' ^. cursorPos . _2)
+              ],
+            term'
+          )
       where
         numHistoryLines = min (newHeight - oldHeight) (TL.length (term ^. scrollBackLines))
         numNewBlankLines = (newHeight - oldHeight) - numHistoryLines
@@ -106,11 +137,27 @@ resizeTermHeight' newHeight term =
           | term ^. altScreenActive = id
           | otherwise = cursorPos . _1 %~ (+ numHistoryLines)
 
-    shrinkScreen :: Term -> Term
-    shrinkScreen =
-      (termScreen %~ TL.takeLast newHeight)
-        >>> addScrollBackLines (TL.take numShrunkLines (term ^. termScreen))
-        >>> moveCursorUp
+    shrinkScreen :: Term -> (Seq TermSurfaceChange, Term)
+    shrinkScreen t =
+      let newScrollBackLines = TL.takeLast (term ^. numScrollBackLines) (TL.take numShrunkLines (term ^. termScreen))
+          term' =
+            ( (termScreen %~ TL.takeLast newHeight)
+                >>> addScrollBackLines newScrollBackLines
+                >>> moveCursorUp
+            )
+              t
+          numToDelete = TL.length (t ^. scrollBackLines) + TL.length newScrollBackLines - term ^. numScrollBackLines
+       in ( ( if numToDelete > 0
+                then pure (TermSurfaceChange.ClearScrollBackStart numToDelete)
+                else mempty
+            )
+              <> TL.toSeq (fmap TermSurfaceChange.AppendScrollBack newScrollBackLines)
+              <> Seq.fromList
+                [ TermSurfaceChange.MoveCursor (min (newHeight - 1) (term' ^. cursorPos . _1)) (term' ^. cursorPos . _2),
+                  TermSurfaceChange.Resize (term ^. numCols) newHeight
+                ],
+            term'
+          )
       where
         numShrunkLines = oldHeight - newHeight
         moveCursorUp :: Term -> Term
@@ -118,6 +165,7 @@ resizeTermHeight' newHeight term =
           | term ^. altScreenActive = id
           | otherwise = cursorPos . _1 %~ (\y -> max 0 (y - numShrunkLines))
 
+    adjustScreen :: Term -> (Seq TermSurfaceChange, Term)
     adjustScreen
       | newHeight > oldHeight = expandScreen
       | otherwise = shrinkScreen
@@ -144,3 +192,14 @@ truncateTermScreenBottom term numLines
     lastLine = TL.last (term ^. termScreen)
     lineIsBlank :: TermLine -> Bool
     lineIsBlank = VU.all (== (' ', 0))
+
+infixr 1 >>>>
+
+(>>>>) :: (Term -> (Seq TermSurfaceChange, Term)) -> (Term -> (Seq TermSurfaceChange, Term)) -> (Term -> (Seq TermSurfaceChange, Term))
+f1 >>>> f2 = \term ->
+  let (cs1, term') = f1 term
+      (cs2, term'') = f2 term'
+   in (cs1 <> cs2, term'')
+
+silent :: (Term -> Term) -> Term -> (Seq TermSurfaceChange, Term)
+silent = \f t -> (mempty, f t)

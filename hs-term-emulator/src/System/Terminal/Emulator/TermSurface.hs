@@ -8,6 +8,6 @@ data TermSurface = TermSurface
     termSurface_cursorPos :: !(Int, Int),
     termSurface_windowTitle :: !Text,
     termSurface_scrollBack :: !TermLines,
-    termSurface_numScrollBackLines :: !Int
+    termSurface_scrollBackVisible :: !Bool
   }
   deriving (Show, Eq, Ord)
