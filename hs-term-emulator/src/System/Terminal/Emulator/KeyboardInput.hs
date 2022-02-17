@@ -8,7 +8,8 @@ module System.Terminal.Emulator.KeyboardInput
 where
 
 data KeyboardState = KeyboardState
-  { keyboardState_DECCKM :: !Bool,
+  { keyboardState_DECPAM :: !Bool,
+    keyboardState_DECCKM :: !Bool,
     -- | Set using Keyboard Action Mode (KAM)
     keyboardState_Locked :: !Bool,
     -- | Set using Automatic Newline / Normal Linefeed (LNM)
@@ -19,7 +20,8 @@ data KeyboardState = KeyboardState
 initialKeyboardState :: KeyboardState
 initialKeyboardState =
   KeyboardState
-    { keyboardState_DECCKM = False,
+    { keyboardState_DECPAM = False,
+      keyboardState_DECCKM = False,
       keyboardState_Locked = False,
       keyboardState_CRLF = False
     }
