@@ -25,7 +25,7 @@ import qualified System.Console.ANSI.Types as SGR
 import System.Terminal.Emulator.Attrs (Attrs, attrsBg, attrsFg, attrsIntensity, attrsUnderline, blankAttrs)
 import System.Terminal.Emulator.DECPrivateMode (DECPrivateMode)
 import qualified System.Terminal.Emulator.DECPrivateMode as DECPrivateMode
-import System.Terminal.Emulator.KeyboardInput (KeyboardState (keyboardState_CRLF, keyboardState_DECCKM, keyboardState_Locked))
+import System.Terminal.Emulator.KeyboardInput (KeyboardState (keyboardState_CRLF, keyboardState_DECCKM, keyboardState_DECPAM, keyboardState_Locked))
 import System.Terminal.Emulator.Parsing.Types (ControlSequenceIntroducer (..), DeviceStatusReport (..), EraseInDisplayParam (..), EraseInLineParam (..), EscapeSequence (..), Mode (..), OperatingSystemCommand (..), SendDeviceAttributesSecondary (RequestTerminalIdentificationCode), SingleCharacterFunction (..), TermAtom (..), WindowManipulation (..))
 import System.Terminal.Emulator.Term (Term, activeScreen, addScrollBackLines, altScreenActive, cursorLine, cursorPos, cursorState, insertMode, keyboardState, mkTerm, modeWrap, numCols, numRows, numScrollBackLines, origin, scrollBackLines, scrollBottom, scrollTop, termAttrs, termScreen, vuIndex, windowTitle, wrapNext)
 import System.Terminal.Emulator.TermLines (TermLine)
@@ -85,8 +85,8 @@ isExpectedInvalidEscSequence str
 processEscapeSequence :: EscapeSequence -> Term -> (ByteString, Seq TermSurfaceChange, Term)
 processEscapeSequence Esc_ReverseIndex = nw reverseIndex
 processEscapeSequence Esc_RIS = ignore -- TODO
-processEscapeSequence Esc_DECPAM = ignore -- TODO
-processEscapeSequence Esc_DECPNM = ignore -- TODO
+processEscapeSequence Esc_DECPAM = nw $ noSurfaceChanges $ keyboardState %~ (\state -> state {keyboardState_DECPAM = True})
+processEscapeSequence Esc_DECPNM = nw $ noSurfaceChanges $ keyboardState %~ (\state -> state {keyboardState_DECPAM = False})
 processEscapeSequence (ESC_SetG0CharacterSet _) = ignore
 processEscapeSequence (Esc_CSI (CSI_CursorUp n)) = nw $ \term -> cursorMoveTo ((term ^. cursorPos . _1) - n, term ^. cursorPos . _2) term
 processEscapeSequence (Esc_CSI (CSI_CursorDown n)) = nw $ \term -> cursorMoveTo ((term ^. cursorPos . _1) + n, term ^. cursorPos . _2) term
