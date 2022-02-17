@@ -5,6 +5,7 @@ module System.Terminal.Emulator.Parsing.Internal where
 import Control.Applicative ((<|>))
 import Data.Attoparsec.Text
 import Data.Char (isDigit)
+import Data.Ix (inRange)
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe (mapMaybe)
@@ -141,7 +142,7 @@ data ControlSequenceIntroducerComponents
 -- This parser always succeeds
 parseControlSequenceIntroducer :: Parser ControlSequenceIntroducerInput
 parseControlSequenceIntroducer = do
-  str <- takeTill ((`between` (0x40, 0x7E)) . fromEnum)
+  str <- takeTill ((inRange (0x40, 0x7E)) . fromEnum)
   c <- anyChar
   pure (ControlSequenceIntroducerInput ((str) <> T.singleton c))
 
@@ -387,14 +388,11 @@ singleCharacterEscapeSequence c =
 -- Helper functions
 -----------------------------------------------------------------------
 
-between :: Ord a => a -> (a, a) -> Bool
-between val (low, high) = val >= low && val <= high
-
 isControlC0 :: Char -> Bool
-isControlC0 c = fromEnum c `between` (0, 0x1F) || c == '\DEL'
+isControlC0 c = (0, 0x1F) `inRange` fromEnum c || c == '\DEL'
 
 isControlC1 :: Char -> Bool
-isControlC1 c = fromEnum c `between` (0x80, 0x9f)
+isControlC1 c = (0x80, 0x9f) `inRange` fromEnum c
 
 isControl :: Char -> Bool
 isControl c = isControlC0 c || isControlC1 c

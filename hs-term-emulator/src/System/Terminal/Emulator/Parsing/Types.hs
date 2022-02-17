@@ -1,5 +1,6 @@
 module System.Terminal.Emulator.Parsing.Types where
 
+import Data.Ix (inRange)
 import Data.Text (Text)
 import Data.Vector (Vector)
 import System.Console.ANSI.Types (SGR)
@@ -203,16 +204,16 @@ codeToSGR 24 = Just $ SGR.SetUnderlining SGR.NoUnderline
 codeToSGR 39 = Just $ SGR.SetDefaultColor SGR.Foreground
 codeToSGR 49 = Just $ SGR.SetDefaultColor SGR.Background
 codeToSGR code
-  | code `between` (30, 37) = do
+  | inRange (30, 37) code = do
     color <- codeToColor (code - 30)
     Just $ SGR.SetColor SGR.Foreground SGR.Dull color
-  | code `between` (90, 97) = do
+  | inRange (90, 97) code = do
     color <- codeToColor (code - 90)
     Just $ SGR.SetColor SGR.Foreground SGR.Vivid color
-  | code `between` (40, 47) = do
+  | inRange (40, 47) code = do
     color <- codeToColor (code - 40)
     Just $ SGR.SetColor SGR.Background SGR.Dull color
-  | code `between` (100, 107) = do
+  | inRange (100, 107) code = do
     color <- codeToColor (code - 100)
     Just $ SGR.SetColor SGR.Background SGR.Vivid color
   | otherwise = Nothing
@@ -227,6 +228,3 @@ codeToColor 5 = Just SGR.Magenta
 codeToColor 6 = Just SGR.Cyan
 codeToColor 7 = Just SGR.White
 codeToColor _ = Nothing
-
-between :: Ord a => a -> (a, a) -> Bool
-between val (low, high) = val >= low && val <= high

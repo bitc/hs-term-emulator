@@ -14,6 +14,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC8
 import Data.Foldable (foldl')
+import Data.Ix (inRange)
 import Data.List (iterate')
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -226,7 +227,7 @@ insertBlankChars n term = (cursorLine %~ updateLine) term
 
 insertBlankLines :: Int -> Term -> Term
 insertBlankLines n term
-  | between (term ^. scrollTop, term ^. scrollBottom) (term ^. cursorPos . _1) = scrollDown (term ^. cursorPos . _1) n term
+  | inRange (term ^. scrollTop, term ^. scrollBottom) (term ^. cursorPos . _1) = scrollDown (term ^. cursorPos . _1) n term
   | otherwise = term
 
 deleteChars :: Int -> Term -> Term
@@ -245,7 +246,7 @@ deleteChars n term = (cursorLine %~ updateLine) term
 
 deleteLines :: Int -> Term -> Term
 deleteLines n term
-  | between (term ^. scrollTop, term ^. scrollBottom) (term ^. cursorPos . _1) = scrollUp (term ^. cursorPos . _1) n term
+  | inRange (term ^. scrollTop, term ^. scrollBottom) (term ^. cursorPos . _1) = scrollUp (term ^. cursorPos . _1) n term
   | otherwise = term
 
 setScrollingRegion :: Maybe Int -> Maybe Int -> Term -> Term
@@ -457,6 +458,3 @@ limit minVal maxVal val
   | val < minVal = minVal
   | val > maxVal = maxVal
   | otherwise = val
-
-between :: Ord a => (a, a) -> a -> Bool
-between (low, high) val = val >= low && val <= high
